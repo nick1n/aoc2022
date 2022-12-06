@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "ts-node-esm"
+    "start": "nodemon --watch \"./**/*.ts\" --exec \"ts-node-esm\""
   },
   "author": "",
   "license": "MIT",

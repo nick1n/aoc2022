@@ -12,12 +12,13 @@ npm install
 &&
 ```
 npm install --global ts-node
+npm install --global nodemon
 ```
 
 ### Run
 
 ```
-npm start day##
+npm start ./day##/main.ts
 ```
 
 ## License
