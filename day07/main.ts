@@ -27,7 +27,6 @@ const input = fs.readFileSync("./day07/input.txt", "utf-8");
 // 7214296 k`;
 const lines = input.split("\n");
 
-let files: { [key: string]: any } = {};
 let cur: string[] = [];
 let dirs: { [key: string]: number } = {};
 
@@ -37,31 +36,20 @@ lines.forEach((line) => {
     if (words[1] == "cd") {
       if (words[2] == "..") {
         cur.pop();
-      } else if (typeof words[2] == "string") {
-        cur.push(words[2]);
-        cur.reduce((files, dir) => {
-          if (!files[dir]) {
-            files[dir] = {};
-          }
-          return files[dir];
-        }, files);
+      } else {
+        cur.push(words[2] ?? "");
       }
     }
-  } else if (words[0] == "dir") {
-    // do nothing...
-  } else {
+  } else if (words[0] != "dir") {
     const size = parseInt(words[0] ?? "0");
-    let curDir = "";
-    let dir = cur.reduce((files, dir) => {
-      curDir += ":" + dir;
-      dirs[curDir] = (dirs[curDir] ?? 0) + size;
-      return files[dir];
-    }, files);
-    dir[words[1] ?? ""] = size;
+    cur.reduce((path, dir) => {
+      path += ":" + dir;
+      dirs[path] = (dirs[path] ?? 0) + size;
+      return path;
+    }, "");
   }
 });
 
-// console.log(files);
 // console.log(dirs);
 
 // Part 1
