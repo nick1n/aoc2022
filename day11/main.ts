@@ -35,7 +35,6 @@ type Oper = "+" | "*" | "^";
 
 type Monkey = {
   items: number[];
-  bigItems: bigint[];
   oper: Oper;
   num: number;
   test: number;
@@ -44,14 +43,17 @@ type Monkey = {
   inspected: number;
 };
 
+const match = (field: string[] | undefined, reg: RegExp) =>
+  (((field ?? [])[1] ?? "").match(reg) ?? [])[0];
+
+const parseNum = (field?: string[]) => +(match(field, /\d+/) ?? "0");
+
 const init = () =>
   text.map((lines): Monkey => {
     const fields = lines.split(/\s*\n\s*/g).map((line) => line.split(/:\s+/g));
     const items = ((fields[1] ?? [])[1] ?? "").split(/,\s+/).map((x) => +x);
-    const bigItems = items.map((x) => BigInt(x));
-    let oper = ((((fields[2] ?? [])[1] ?? "").match(/[+*]/) ?? [])[0] ??
-      "+") as Oper;
-    let old = (((fields[2] ?? [])[1] ?? "").match(/\d+/) ?? [])[0];
+    let oper = (match(fields[2], /[+*]/) ?? "+") as Oper;
+    let old = match(fields[2], /\d+/);
     let num = 0;
     if (old == undefined) {
       oper = "^";
@@ -59,10 +61,10 @@ const init = () =>
     } else {
       num = +old;
     }
-    const test = +((((fields[3] ?? [])[1] ?? "").match(/\d+/) ?? [])[0] ?? "0");
-    const t = +((((fields[4] ?? [])[1] ?? "").match(/\d+/) ?? [])[0] ?? "0");
-    const f = +((((fields[5] ?? [])[1] ?? "").match(/\d+/) ?? [])[0] ?? "0");
-    return { items, bigItems, oper, num, test, t, f, inspected: 0 };
+    const test = parseNum(fields[3]);
+    const t = parseNum(fields[4]);
+    const f = parseNum(fields[5]);
+    return { items, oper, num, test, t, f, inspected: 0 };
   });
 
 // Part 1
@@ -95,28 +97,23 @@ console.log(inspected);
 console.log((inspected[0] ?? 1) * (inspected[1] ?? 1));
 
 // Part 2
-const performBigOp = (input: bigint, op: Oper, num: number) => {
-  if (op == "*") return input * BigInt(num);
-  if (op == "+") return input + BigInt(num);
-  return input * input;
-};
-
 monkeys = init();
+const divisibleByLCM = monkeys.reduce((mul, monkey) => mul * monkey.test, 1);
 
 for (let round = 0; round < 10000; ++round) {
-  if (round % 1000 == 0) {
-    const inspects = monkeys.map((x) => x.inspected);
-    console.log(round, inspects);
-  }
+  // if (round % 1000 == 0) {
+  //   const inspects = monkeys.map((x) => x.inspected);
+  //   console.log(round, inspects);
+  // }
   monkeys.forEach((monkey) => {
-    const items = [...monkey.bigItems];
-    monkey.bigItems = [];
+    const items = [...monkey.items];
+    monkey.items = [];
     items.forEach((item) => {
-      const level = performBigOp(item, monkey.oper, monkey.num) % 9699690n;
-      if (level % BigInt(monkey.test) == 0n) {
-        monkeys[monkey.t]?.bigItems.push(level);
+      const level = performOp(item, monkey.oper, monkey.num) % divisibleByLCM;
+      if (level % monkey.test == 0) {
+        monkeys[monkey.t]?.items.push(level);
       } else {
-        monkeys[monkey.f]?.bigItems.push(level);
+        monkeys[monkey.f]?.items.push(level);
       }
     });
     monkey.inspected += items.length;
