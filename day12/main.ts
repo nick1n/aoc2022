@@ -109,16 +109,15 @@ function goWest(cur: Node, pos: Pos, curHeight: number) {
   }
 }
 
-let count = 0;
 function showMap(node?: Node) {
   let show = [...chars];
 
   while (node) {
-    ++count;
-    const p = node.pos;
-    show[p.x] = show[p.x]?.slice(0, p.y) + "." + show[p.x]?.slice(p.y + 1);
+    const { x, y } = node.pos;
+    show[x] = show[x]?.slice(0, y) + "." + show[x]?.slice(y + 1);
     node = node.parent;
   }
+
   show.forEach((x) => console.log(x));
 }
 
@@ -127,17 +126,19 @@ showMap(getNode(end));
 console.log("end score", getNode(end)?.score);
 
 // Part 2
-count = 0;
+let count = 0;
 function showMap2(node?: Node) {
   let show = [...chars];
 
   while (node) {
-    const p = node.pos;
-    if (show[p.x]?.slice(p.y, p.y + 1) == "a") break;
+    const { x, y } = node.pos;
+    const char = show[x]?.slice(y, y + 1);
+    show[x] = show[x]?.slice(0, y) + "." + show[x]?.slice(y + 1);
+    if (char == "a") break;
     ++count;
-    show[p.x] = show[p.x]?.slice(0, p.y) + "." + show[p.x]?.slice(p.y + 1);
     node = node.parent;
   }
+
   show.forEach((x) => console.log(x));
 }
 showMap2(getNode(end));
